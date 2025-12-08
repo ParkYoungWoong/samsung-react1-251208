@@ -1,9 +1,25 @@
 import type { FormEvent } from 'react'
+import api, { ACCESS_TOKEN_NAME } from '@/lib/api'
+import { useNavigate } from 'react-router'
 
 export default function SignIn() {
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  const navigate = useNavigate()
+  
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    
+    const formData = new FormData(event.currentTarget)
+    const email = formData.get('id')
+    const password = formData.get('pw')
+    
+    const { data } = await api.post('/auth/signin', {
+      email,
+      password
+    })
+    if (data.token) {
+      localStorage.setItem(ACCESS_TOKEN_NAME, data.token)
+      navigate('/')
+    }
   }
 
   return <>
