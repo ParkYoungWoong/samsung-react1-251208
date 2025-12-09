@@ -1,9 +1,5 @@
 import { useState } from 'react'
-import {
-  useInfiniteQuery,
-  useQueryClient,
-  infiniteQueryOptions
-} from '@tanstack/react-query'
+import { useQuery, useQueryClient, queryOptions } from '@tanstack/react-query'
 import axios from 'axios'
 import Loader from '@/components/Loader'
 
@@ -25,33 +21,36 @@ export default function Movies() {
   const [searchText, setSearchText] = useState('')
   const queryClient = useQueryClient()
 
-  const options = infiniteQueryOptions<ReponseValue>({
+  const options = queryOptions<SimpleMovie[]>({
     queryKey: ['movies', searchText],
-    queryFn: async ({ pageParam }) => {
-      const { data: page } = await axios.get(
-        `https://omdbapi.com?apikey=7035c60c&s=${searchText}&page=${pageParam}`
+    queryFn: async () => {
+      const { data } = await axios.get(
+        `https://omdbapi.com?apikey=7035c60c&s=${searchText}`
       )
-      return page
+      return data.Search
     },
     staleTime: 1000 * 5, // 5 seconds
     enabled: Boolean(searchText),
-    // select: movies => {
-    //   return movies.filter((movie, index, self) => {
-    //     return self.findIndex(m => m.imdbID === movie.imdbID) === index
-    //   })
-    // },
-    placeholderData: prev => prev,
-    initialPageParam: 1,
-    getNextPageParam: (lastPage, allPages) => {
-      const maxPage = Math.ceil(Number(lastPage.totalResults) / 10) // 검색 결과 => '632' => 632 => 63.2
-      return allPages.length < maxPage ? allPages.length + 1 : null
-    }
+    select: movies => {
+      return movies.filter((movie, index, self) => {
+        return self.findIndex(m => m.imdbID === movie.imdbID) === index
+      })
+    },
+    placeholderData: prev => prev
   })
 
-  const { data, isFetching, fetchNextPage } = useInfiniteQuery(options)
+  const { data: movies, isFetching, refetch } = useQuery(options)
 
   function searchMovies() {
     setSearchText(inputText)
+  }
+  function fetchQuery() {
+    // 캐시된 데이터가 있으면 그 데이터를 사용하고, 없으면 새로 요청
+    queryClient.fetchQuery(options)
+    // queryClient.getQueryData(options.queryKey)
+    // queryClient.setQueryData(options.queryKey, [])
+    // queryClient.removeQueries({ queryKey: options.queryKey })
+    // queryClient.invalidateQueries({ queryKey: options.queryKey })
   }
 
   return (
@@ -68,6 +67,8 @@ export default function Movies() {
         }}
       />
       <button onClick={searchMovies}>검색!</button>
+      <button onClick={() => refetch()}>다시 검색!</button>
+      <button onClick={fetchQuery}>캐시 검색!</button>
 
       {isFetching && (
         <Loader
@@ -76,13 +77,10 @@ export default function Movies() {
         />
       )}
       <ul>
-        {data?.pages.map(page => {
-          return page.Search.map(movie => {
-            return <li key={movie.imdbID}>{movie.Title}</li>
-          })
+        {movies?.map(movie => {
+          return <li key={movie.imdbID}>{movie.Title}</li>
         })}
       </ul>
-      <button onClick={() => fetchNextPage()}>다음 페이지</button>
     </>
   )
 }
