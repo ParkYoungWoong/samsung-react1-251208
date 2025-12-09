@@ -21,7 +21,7 @@ const router = createBrowserRouter([
   },
   {
     path: '/movies',
-    Component: dynamic(() => import('./pages/Movies'))
+    Component: dynamic(() => import('./pages/Movies.infiniteQuery'))
   },
   {
     path: '/movies/:movieId',

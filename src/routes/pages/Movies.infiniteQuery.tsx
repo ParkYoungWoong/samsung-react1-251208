@@ -1,11 +1,8 @@
-import { useState } from 'react'
-import {
-  useInfiniteQuery,
-  useQueryClient,
-  infiniteQueryOptions
-} from '@tanstack/react-query'
+import { useState, useEffect, Fragment } from 'react'
+import { useInfiniteQuery, infiniteQueryOptions } from '@tanstack/react-query'
 import axios from 'axios'
 import Loader from '@/components/Loader'
+import { useInView } from 'react-intersection-observer'
 
 export interface ReponseValue {
   Search: SimpleMovie[]
@@ -21,9 +18,11 @@ export interface SimpleMovie {
 }
 
 export default function Movies() {
+  const { ref, inView } = useInView({
+    rootMargin: '0px 0px 500px 0px'
+  })
   const [inputText, setInputText] = useState('')
   const [searchText, setSearchText] = useState('')
-  const queryClient = useQueryClient()
 
   const options = infiniteQueryOptions<ReponseValue>({
     queryKey: ['movies', searchText],
@@ -33,12 +32,18 @@ export default function Movies() {
       )
       return page
     },
-    staleTime: 1000 * 5, // 5 seconds
+    staleTime: 1000 * 60 * 5, // 5 seconds
     enabled: Boolean(searchText),
-    // select: movies => {
-    //   return movies.filter((movie, index, self) => {
-    //     return self.findIndex(m => m.imdbID === movie.imdbID) === index
+    // select: data => {
+    //   const pages = data.pages.map(page => {
+    //     return page.Search.filter((movie, index, self) => {
+    //       return self.findIndex(m => m.imdbID === movie.imdbID) === index
+    //     })
     //   })
+    //   return {
+    //     ...data,
+    //     pages
+    //   }
     // },
     placeholderData: prev => prev,
     initialPageParam: 1,
@@ -48,7 +53,14 @@ export default function Movies() {
     }
   })
 
-  const { data, isFetching, fetchNextPage } = useInfiniteQuery(options)
+  const { data, isFetching, fetchNextPage, hasNextPage } =
+    useInfiniteQuery(options)
+
+  useEffect(() => {
+    if (inView) {
+      fetchNextPage()
+    }
+  }, [inView])
 
   function searchMovies() {
     setSearchText(inputText)
@@ -76,13 +88,24 @@ export default function Movies() {
         />
       )}
       <ul>
-        {data?.pages.map(page => {
-          return page.Search.map(movie => {
-            return <li key={movie.imdbID}>{movie.Title}</li>
-          })
+        {data?.pages.map((page, index) => {
+          return (
+            <Fragment key={index}>
+              <li>----------- {index + 1} -----------</li>
+              {page.Search?.map(movie => {
+                return <li key={movie.imdbID}>{movie.Title}</li>
+              })}
+            </Fragment>
+          )
         })}
       </ul>
-      <button onClick={() => fetchNextPage()}>다음 페이지</button>
+      <button
+        ref={ref}
+        style={{
+          display: isFetching || !searchText || !hasNextPage ? 'none' : 'block'
+        }}>
+        다음 페이지
+      </button>
     </>
   )
 }
