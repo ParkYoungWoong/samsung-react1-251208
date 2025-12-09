@@ -11,6 +11,7 @@ export default function Home() {
       <h2 onClick={increase}>Count: {count}</h2>
       <div className="flex gap-2.5">
         <Link to="/signin">Sign In</Link>
+        <Link to="/todos">Todos</Link>
         <Link to="/movies">Movies</Link>
         <Link to="/movies/tt0848228">Avengers</Link>
         <Link to="/movies/tt1877830">Batman</Link>
