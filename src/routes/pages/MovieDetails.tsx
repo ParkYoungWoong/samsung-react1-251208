@@ -36,21 +36,31 @@ export interface Rating {
 }
 
 export default function MovieDetails() {
-  const [movie, setMovie] = useState<Movie | null>(null)
   const { movieId } = useParams() // http://localhost:5174/movies/tt1234567
 
-  useEffect(() => {
-    async function fetchMovie() {
+  const { data: movie, isFetching } = useQuery<Movie>({
+    queryKey: ['movie', movieId],
+    queryFn: async () => {
       const { data: movie } = await axios.get(
         `https://omdbapi.com?apikey=7035c60c&i=${movieId}`
       )
-      setMovie(movie)
+      return movie
+    },
+    staleTime: 1000 * 60 * 60 * 24, // 24 hours
+    select: movie => {
+      // 'https://m.media-amazon.com/images/M/cGc@._V1_SX300.jpg'
+      movie.Poster
+      return {
+        ...movie,
+        Title: movie.Title.toUpperCase(),
+        Poster: movie.Poster.replace('SX300', 'SX11000')
+      }
     }
-    fetchMovie()
-  }, [movieId])
+  })
 
   return (
     <>
+      {isFetching && <div>Loading...</div>}
       <h1>{movie?.Title}</h1>
       <img
         src={movie?.Poster}
