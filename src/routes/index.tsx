@@ -20,6 +20,10 @@ const router = createBrowserRouter([
     Component: dynamic(() => import('./pages/Home'))
   },
   {
+    path: '/movies',
+    Component: dynamic(() => import('./pages/Movies'))
+  },
+  {
     path: '/movies/:movieId',
     loader: requiresAuth,
     Component: dynamic(() => import('./pages/MovieDetails'))
