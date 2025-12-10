@@ -34,17 +34,15 @@ export default function Movies() {
     },
     staleTime: 1000 * 60 * 5, // 5 seconds
     enabled: Boolean(searchText),
-    // select: data => {
-    //   const pages = data.pages.map(page => {
-    //     return page.Search.filter((movie, index, self) => {
-    //       return self.findIndex(m => m.imdbID === movie.imdbID) === index
-    //     })
-    //   })
-    //   return {
-    //     ...data,
-    //     pages
-    //   }
-    // },
+    select: data => ({
+      ...data,
+      pages: data.pages.map(page => ({
+        ...page,
+        Search: page.Search.filter((movie, index, self) => {
+          return self.findIndex(m => m.imdbID === movie.imdbID) === index
+        })
+      }))
+    }),
     placeholderData: prev => prev,
     initialPageParam: 1,
     getNextPageParam: (lastPage, allPages) => {
