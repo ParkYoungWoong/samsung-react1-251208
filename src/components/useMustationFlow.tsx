@@ -42,6 +42,9 @@ export default function Test() {
 
   return (
     <>
+      {nums?.map(num => (
+        <li key={num}>{num}</li>
+      ))}
       <button onClick={() => mutateAsync(7)}>클릭!</button>
     </>
   )

@@ -2,7 +2,7 @@ import axios from 'axios'
 
 export const ACCESS_TOKEN_NAME = 'token'
 const REFRESH_URL = '/auth/refresh'
-const SIGNIN_URL = '/signin'
+// const SIGNIN_URL = '/signin'
 
 const options = {
   baseURL: 'https://api.heropy.dev/v1',
