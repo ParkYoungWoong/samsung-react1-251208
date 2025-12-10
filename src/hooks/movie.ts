@@ -30,7 +30,11 @@ export const useMovieStore = create(
 )
 
 export function useFetchMovies() {
-  return useInfiniteQuery<ReponseValue>({
+  const inputText = useMovieStore(s => s.inputText)
+  const setInputText = useMovieStore(s => s.setInputText)
+  const searchText = useMovieStore(s => s.searchText)
+  const setSearchText = useMovieStore(s => s.setSearchText)
+  const result = useInfiniteQuery<ReponseValue>({
     queryKey: ['movies', searchText],
     queryFn: async ({ pageParam }) => {
       const { data: page } = await axios.get(
@@ -56,4 +60,11 @@ export function useFetchMovies() {
       return allPages.length < maxPage ? allPages.length + 1 : null
     }
   })
+  return {
+    ...result,
+    inputText,
+    setInputText,
+    searchText,
+    setSearchText
+  }
 }

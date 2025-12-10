@@ -1,4 +1,4 @@
-import { useState, useEffect, Fragment } from 'react'
+import { useEffect, Fragment } from 'react'
 import Loader from '@/components/Loader'
 import { useInView } from 'react-intersection-observer'
 import { useFetchMovies } from '@/hooks/movie'
@@ -7,10 +7,16 @@ export default function Movies() {
   const { ref, inView } = useInView({
     rootMargin: '0px 0px 500px 0px'
   })
-  const [inputText, setInputText] = useState('')
-  const [searchText, setSearchText] = useState('')
-
-  const { data, isFetching, fetchNextPage, hasNextPage } = useFetchMovies()
+  const {
+    data,
+    isFetching,
+    fetchNextPage,
+    hasNextPage,
+    inputText,
+    setInputText,
+    searchText,
+    setSearchText
+  } = useFetchMovies()
 
   useEffect(() => {
     if (inView) {
